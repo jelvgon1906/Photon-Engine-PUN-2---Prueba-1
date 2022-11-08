@@ -5,6 +5,7 @@ using Photon.Pun;
 using TMPro;
 using UnityEngine.UI;
 using Photon.Realtime;
+using UnityEngine.SceneManagement;
 
 public class ControlConexion : MonoBehaviourPunCallbacks
 {
@@ -14,10 +15,12 @@ public class ControlConexion : MonoBehaviourPunCallbacks
     #region Variables publicas
     public GameObject panelInicio;
     public GameObject panelBienvenida;
+    public GameObject panelCreacionSala;
+    public GameObject panelUnirSala;
     public GameObject panelSala;
     /*public GameObject btnConectar;*/
     public Button btnConectar;
-    public TextMeshProUGUI txtEstado, txtInfoUser;
+    public TextMeshProUGUI txtEstado, txtInfoUser, txtCantidadJugadores, txtNombreSala, txtIsOpen;
     public TMP_InputField inputNickname, inputNombreSala, inputMaxJug, inputMinJug;
     #endregion
 
@@ -26,6 +29,8 @@ public class ControlConexion : MonoBehaviourPunCallbacks
     {
         CambiarPanel(panelInicio);
     }
+
+    
 
     #region Eventos para botones
 
@@ -57,7 +62,24 @@ public class ControlConexion : MonoBehaviourPunCallbacks
 
     public void OnClickIrACrearSala()
     {
-        CambiarPanel(panelSala);
+        CambiarPanel(panelCreacionSala);
+    }
+    public void OnClickIrAUnirSala()
+    {
+        CambiarPanel(panelUnirSala);
+    }
+    public void OnClickVolver(GameObject LastPanel)
+    {
+        CambiarPanel(LastPanel);
+        if(PhotonNetwork.CurrentRoom != null)
+        {
+            PhotonNetwork.LeaveRoom();
+        }
+    }
+    public void OnClickVolverInicio(GameObject LastPanel)
+    {
+        PhotonNetwork.Disconnect();
+        SceneManager.LoadScene("Menu");
     }
 
     public void OnClickCrearSala()
@@ -105,6 +127,26 @@ public class ControlConexion : MonoBehaviourPunCallbacks
     {
         base.OnCreatedRoom();
         CambiarEstado("Sala creada correctamente");
+        CambiarPanel(panelSala);
+        if (PhotonNetwork.CurrentRoom.IsOpen)
+        txtIsOpen.text = "Sala abierta" ;
+        else txtIsOpen.text = "Sala cerrada";
+        txtNombreSala.text = "Nombre: " + PhotonNetwork.CurrentRoom.Name;
+        txtCantidadJugadores.text = "Jugadores: " + PhotonNetwork.CurrentRoom.PlayerCount + "/" + PhotonNetwork.CurrentRoom.MaxPlayers;
+
+        //Leemos info jugadores
+
+        Player[] jugadores = PhotonNetwork.PlayerList;
+        //Para cada jugador en jugadores
+        foreach (Player player in jugadores)
+        {
+            /*info = player.ActorNumber;
+            info += player.PhotonNetwork.Nickname;
+
+            mensaje += info;
+*/
+        }
+        //mostrar mensaje
     }
 
     public override void OnCreateRoomFailed(short returnCode, string message)
@@ -131,6 +173,8 @@ public class ControlConexion : MonoBehaviourPunCallbacks
     {
         panelBienvenida.SetActive(false) ;
         panelInicio.SetActive(false);
+        panelCreacionSala.SetActive(false);
+        panelUnirSala.SetActive(false);
         panelSala.SetActive(false);
 
         panelObjetivo.SetActive(true);
