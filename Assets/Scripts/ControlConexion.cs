@@ -1,11 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using Photon.Pun;
-using TMPro;
-using UnityEngine.UI;
+﻿using Photon.Pun;
 using Photon.Realtime;
+using TMPro;
+using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class ControlConexion : MonoBehaviourPunCallbacks
 {
@@ -21,7 +19,7 @@ public class ControlConexion : MonoBehaviourPunCallbacks
     /*public GameObject btnConectar;*/
     public Button btnConectar;
     public TextMeshProUGUI txtEstado, txtInfoUser, txtCantidadJugadores, txtNombreSala, txtIsOpen;
-    public TMP_InputField inputNickname, inputNombreSala, inputMaxJug, inputMinJug;
+    public TMP_InputField inputNickname, inputNombreSala, inputMaxJug, inputMinJug, inputUnirSala;
 
     public Button botonComenzarJuego; //Instancia del boton Conectar
 
@@ -33,9 +31,11 @@ public class ControlConexion : MonoBehaviourPunCallbacks
     private void Start()
     {
         CambiarPanel(panelInicio);
+        PhotonNetwork.AutomaticallySyncScene = true;
+        DontDestroyOnLoad(this.gameObject);
     }
 
-    
+
 
     #region Eventos para botones
 
@@ -76,7 +76,7 @@ public class ControlConexion : MonoBehaviourPunCallbacks
     public void OnClickVolver(GameObject LastPanel)
     {
         CambiarPanel(LastPanel);
-        if(PhotonNetwork.CurrentRoom != null)
+        if (PhotonNetwork.CurrentRoom != null)
         {
             PhotonNetwork.LeaveRoom();
         }
@@ -87,7 +87,7 @@ public class ControlConexion : MonoBehaviourPunCallbacks
         SceneManager.LoadScene("Menu");
     }
 
-    
+
 
     public void OnClickCrearSala()
     {
@@ -103,7 +103,7 @@ public class ControlConexion : MonoBehaviourPunCallbacks
                 RoomOptions opcionesSala = new RoomOptions();
                 opcionesSala.MaxPlayers = (byte)max;
                 opcionesSala.IsVisible = true;
-                opcionesSala.IsOpen = true;
+                /*opcionesSala.IsOpen = false;*/
 
                 PhotonNetwork.CreateRoom(inputNombreSala.text, opcionesSala, TypedLobby.Default);
             }
@@ -120,14 +120,20 @@ public class ControlConexion : MonoBehaviourPunCallbacks
 
     public void OnClickUnirseASala()
     {
-        if (!string.IsNullOrEmpty(inputNombreSala.text))
+        if (!string.IsNullOrEmpty(inputUnirSala.text))
         {
-            PhotonNetwork.JoinRoom(inputNombreSala.text);
+            PhotonNetwork.JoinRoom(inputUnirSala.text);
         }
         else
         {
-            CambiarEstado("Introduzca un nombre correcto para la sala");
+            
+            CambiarEstado("Introduzca un nombre correcto para la sala" + inputUnirSala.text);
         }
+    }
+
+    public void OnClickComenzarPartida()
+    {
+        SceneManager.LoadScene("GAME");
     }
     #endregion
 
@@ -147,6 +153,8 @@ public class ControlConexion : MonoBehaviourPunCallbacks
         base.OnDisconnected(cause);
         CambiarEstado("Desconectado por:" + cause.ToString());
         CambiarPanel(panelInicio);
+        btnConectar.interactable = true;
+        txtInfoUser.text = "No user";
     }
 
     /*public override void OnCreatedRoom()
@@ -177,7 +185,7 @@ public class ControlConexion : MonoBehaviourPunCallbacks
     }*/
     public override void OnCreatedRoom()
     {
-        
+
         string mensaje = PhotonNetwork.NickName
             + " se ha conectado a "
             + PhotonNetwork.CurrentRoom.Name;
@@ -197,6 +205,7 @@ public class ControlConexion : MonoBehaviourPunCallbacks
 
     public override void OnJoinedRoom()
     {
+        Debug.Log("hi!");
         string mensaje = PhotonNetwork.NickName
         + " se ha unido a "
         + PhotonNetwork.CurrentRoom.Name;
@@ -236,9 +245,9 @@ public class ControlConexion : MonoBehaviourPunCallbacks
         txtEstado.text = texto;
     }
 
-    private void CambiarPanel (GameObject panelObjetivo)
+    private void CambiarPanel(GameObject panelObjetivo)
     {
-        panelBienvenida.SetActive(false) ;
+        panelBienvenida.SetActive(false);
         panelInicio.SetActive(false);
         panelCreacionSala.SetActive(false);
         panelUnirSala.SetActive(false);

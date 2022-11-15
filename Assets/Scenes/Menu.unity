@@ -1768,7 +1768,7 @@ GameObject:
   - component: {fileID: 508981016}
   - component: {fileID: 508981015}
   m_Layer: 5
-  m_Name: IFNickname
+  m_Name: IFUnirseSala
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2136,7 +2136,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &654933898
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6276,6 +6276,7 @@ MonoBehaviour:
   inputNombreSala: {fileID: 1935346116}
   inputMaxJug: {fileID: 1607827942}
   inputMinJug: {fileID: 780489607}
+  inputUnirSala: {fileID: 508981015}
   botonComenzarJuego: {fileID: 1900527581}
   elemJugador: {fileID: 7368946672044184484, guid: b9585ff3bdc8c304a8a4f83ff5a69b1f, type: 3}
   contenedorJugadores: {fileID: 1346187973}
@@ -7761,7 +7762,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1627437509}
         m_TargetAssemblyTypeName: ControlConexion, Assembly-CSharp
-        m_MethodName: 
+        m_MethodName: OnClickComenzarPartida
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
-using Photon.Pun;
+﻿using Photon.Pun;
 using Photon.Realtime;
 using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
 
 public class CtrlConexion : MonoBehaviourPunCallbacks
@@ -68,8 +66,8 @@ public class CtrlConexion : MonoBehaviourPunCallbacks
                 //Deshabilitamos el botón para evitar doble pulsación
                 botonConectar.interactable = false;
                 //Conectamos a Photon con la configuración de usuario
-                PhotonNetwork.ConnectUsingSettings(); 
-                
+                PhotonNetwork.ConnectUsingSettings();
+
                 CambiarEstado("Conectando...");
             }
             else
@@ -77,14 +75,15 @@ public class CtrlConexion : MonoBehaviourPunCallbacks
                 //Indicar que ya estamos conectados
                 CambiarEstado("Ya está conectado a Photon");
             }
-        } else
+        }
+        else
         {
             //Indicar que el nombre no es correcto
             CambiarEstado("Nombre de usuario incorrecto");
         }
 
-        
-        
+
+
 
     }
 
@@ -99,8 +98,8 @@ public class CtrlConexion : MonoBehaviourPunCallbacks
     public void OnClickIrAConectarASala()
     {
         CambiarEstado("Conexión a una sala existente");
-        CambiarPanel(panelConexionSala); 
-        
+        CambiarPanel(panelConexionSala);
+
     }
 
     /// <summary>
@@ -122,10 +121,10 @@ public class CtrlConexion : MonoBehaviourPunCallbacks
         if (!(string.IsNullOrWhiteSpace(inputNombreSala.text) ||
             string.IsNullOrEmpty(inputNombreSala.text)))
         {
-            if (min>0 && max >= min)
+            if (min > 0 && max >= min)
             {
                 RoomOptions opcionesSala = new RoomOptions();
-                opcionesSala.MaxPlayers = (byte) max;
+                opcionesSala.MaxPlayers = (byte)max;
                 opcionesSala.IsVisible = true;
                 //opcionesSala.IsOpen = false;
 
@@ -180,11 +179,11 @@ public class CtrlConexion : MonoBehaviourPunCallbacks
     /// </summary>
     public void OnClickDesconectar()
     {
-        
+
     }
     #endregion
 
-    
+
 
     #region Eventos propios de Photon
     public override void OnConnected()
@@ -249,7 +248,7 @@ public class CtrlConexion : MonoBehaviourPunCallbacks
     /// de los paneles de introducción al juego
     /// </summary>
     /// <param name="texto">Nuevo mensaje a colocar</param>
-    private void CambiarEstado (string texto)
+    private void CambiarEstado(string texto)
     {
         txtEstado.text = texto;
     }
@@ -261,7 +260,7 @@ public class CtrlConexion : MonoBehaviourPunCallbacks
     /// Para ello, desactiva todos y activa el que se indica.
     /// </summary>
     /// <param name="panelObjetivo">Panel a activar</param>
-    private void CambiarPanel (GameObject panelObjetivo)
+    private void CambiarPanel(GameObject panelObjetivo)
     {
         panelBienvenida.SetActive(false);
         panelInicio.SetActive(false);
@@ -329,7 +328,7 @@ public class CtrlConexion : MonoBehaviourPunCallbacks
         {
             botonComenzarJuego.gameObject.SetActive(false);
         }
-    
+
     }
     #endregion
 }
