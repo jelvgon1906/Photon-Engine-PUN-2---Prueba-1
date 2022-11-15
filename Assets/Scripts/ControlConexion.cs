@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
@@ -22,6 +22,11 @@ public class ControlConexion : MonoBehaviourPunCallbacks
     public Button btnConectar;
     public TextMeshProUGUI txtEstado, txtInfoUser, txtCantidadJugadores, txtNombreSala, txtIsOpen;
     public TMP_InputField inputNickname, inputNombreSala, inputMaxJug, inputMinJug;
+
+    public Button botonComenzarJuego; //Instancia del boton Conectar
+
+    public GameObject elemJugador; //Cada uno de los botones que representa un jugador en la lista de sala
+    public GameObject contenedorJugadores; //Contenedor que mantiene la lista de jugadores
     #endregion
 
 
@@ -82,6 +87,8 @@ public class ControlConexion : MonoBehaviourPunCallbacks
         SceneManager.LoadScene("Menu");
     }
 
+    
+
     public void OnClickCrearSala()
     {
 
@@ -96,7 +103,7 @@ public class ControlConexion : MonoBehaviourPunCallbacks
                 RoomOptions opcionesSala = new RoomOptions();
                 opcionesSala.MaxPlayers = (byte)max;
                 opcionesSala.IsVisible = true;
-                opcionesSala.IsOpen = false;
+                opcionesSala.IsOpen = true;
 
                 PhotonNetwork.CreateRoom(inputNombreSala.text, opcionesSala, TypedLobby.Default);
             }
@@ -108,6 +115,18 @@ public class ControlConexion : MonoBehaviourPunCallbacks
         else
         {
             CambiarEstado("Numero de jugadores incorrecto.");
+        }
+    }
+
+    public void OnClickUnirseASala()
+    {
+        if (!string.IsNullOrEmpty(inputNombreSala.text))
+        {
+            PhotonNetwork.JoinRoom(inputNombreSala.text);
+        }
+        else
+        {
+            CambiarEstado("Introduzca un nombre correcto para la sala");
         }
     }
     #endregion
@@ -123,7 +142,14 @@ public class ControlConexion : MonoBehaviourPunCallbacks
         CambiarPanel(panelBienvenida);
     }
 
-    public override void OnCreatedRoom()
+    public override void OnDisconnected(DisconnectCause cause)
+    {
+        base.OnDisconnected(cause);
+        CambiarEstado("Desconectado por:" + cause.ToString());
+        CambiarPanel(panelInicio);
+    }
+
+    /*public override void OnCreatedRoom()
     {
         base.OnCreatedRoom();
         CambiarEstado("Sala creada correctamente");
@@ -140,19 +166,60 @@ public class ControlConexion : MonoBehaviourPunCallbacks
         //Para cada jugador en jugadores
         foreach (Player player in jugadores)
         {
-            /*info = player.ActorNumber;
-            info += player.PhotonNetwork.Nickname;
+            //button
+                *//*info = player.ActorNumber;
+                 info += player.PhotonNetwork.Nickname;
 
-            mensaje += info;
-*/
+                mensaje += info;
+*//*
         }
         //mostrar mensaje
+    }*/
+    public override void OnCreatedRoom()
+    {
+        
+        string mensaje = PhotonNetwork.NickName
+            + " se ha conectado a "
+            + PhotonNetwork.CurrentRoom.Name;
+        if (PhotonNetwork.CurrentRoom.IsOpen)
+            txtIsOpen.text = "Sala abierta";
+        else txtIsOpen.text = "Sala cerrada";
+        CambiarEstado(mensaje);
+        CambiarPanel(panelSala);
+        ActualizarPanelJugadores();
     }
 
     public override void OnCreateRoomFailed(short returnCode, string message)
     {
         base.OnCreateRoomFailed(returnCode, message);
-        CambiarEstado("Sala creada correctamente");
+        CambiarEstado("Error al crear sala: " + message);
+    }
+
+    public override void OnJoinedRoom()
+    {
+        string mensaje = PhotonNetwork.NickName
+        + " se ha unido a "
+        + PhotonNetwork.CurrentRoom.Name;
+        CambiarEstado(mensaje);
+        CambiarPanel(panelSala);
+        ActualizarPanelJugadores();
+    }
+
+
+    public override void OnJoinRoomFailed(short returnCode, string message)
+    {
+        CambiarEstado("No ha sido posible conectar a la sala: " + message);
+    }
+
+
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        ActualizarPanelJugadores();
+    }
+
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
+        ActualizarPanelJugadores();
     }
 
 
@@ -160,7 +227,7 @@ public class ControlConexion : MonoBehaviourPunCallbacks
 
     #region Metodos privados
     /// <summary>
-    /// M�todo que cambiar� el mensaje de Estado
+    /// Método que cambiará el mensaje de Estado
     /// de los paneles de introduccion al juego
     /// </summary>
     /// <param name="texto"></param>
@@ -180,6 +247,59 @@ public class ControlConexion : MonoBehaviourPunCallbacks
         panelObjetivo.SetActive(true);
     }
 
-    
+    private void ActualizarPanelJugadores()
+    {
+        //Actualizaci�n del nombre de sala y su capacidad
+        txtNombreSala.text = PhotonNetwork.CurrentRoom.Name;
+        txtCantidadJugadores.text = PhotonNetwork.CurrentRoom.PlayerCount + "/" + PhotonNetwork.CurrentRoom.MaxPlayers;
+
+        //Eliminamos todos los botones para empezar desde cero en cada actualización
+        while (contenedorJugadores.transform.childCount > 0)
+        {
+            DestroyImmediate(contenedorJugadores.transform.GetChild(0).gameObject);
+        }
+
+
+        foreach (Player jugador in PhotonNetwork.PlayerList)
+        {
+            //Instanciamos un nuevo boton y lo colgamos del contenedor
+            GameObject nuevoElemento = Instantiate(elemJugador);
+            nuevoElemento.transform.SetParent(contenedorJugadores.transform, false);
+            //Localizamos sus etiquetas y las actualizamos
+            nuevoElemento.transform.Find("txtNombreJugador").GetComponent<TextMeshProUGUI>().text = jugador.NickName;
+            //Equipo del jugador            
+            /*object equipoJugador = jugador.CustomProperties["equipo"];
+            String equipo = "";
+            switch ((int)equipoJugador)
+            {
+                case 0:
+                    equipo = "Rojo";
+                    break;
+                case 1:
+                    equipo = "Azul";
+                    break;
+                case 2:
+                    equipo = "Verde";
+                    break;
+            }
+            nuevoElemento.transform.Find("txtNumActor").GetComponent<TextMeshProUGUI>().text = avatar;
+           */
+        }
+
+
+        //Activaci�n de bot�n Comenzar Juego si el n�mero m�nimo de jugadores est� en la sala
+        if (PhotonNetwork.CurrentRoom.PlayerCount >= int.Parse(inputMinJug.text)
+            && PhotonNetwork.IsMasterClient)
+        {
+            botonComenzarJuego.gameObject.SetActive(true);
+        }
+        else
+        {
+            botonComenzarJuego.gameObject.SetActive(false);
+        }
+
+    }
+
+
     #endregion
 }
