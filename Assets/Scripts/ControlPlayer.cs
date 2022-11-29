@@ -1,4 +1,5 @@
 using Photon.Pun;
+using System;
 using UnityEngine;
 
 public class ControlPlayer : MonoBehaviourPunCallbacks
@@ -7,17 +8,41 @@ public class ControlPlayer : MonoBehaviourPunCallbacks
     public float rotationSpeed;
     Rigidbody rb;
     Animator animator;
+    Camera cam;
+    [SerializeField] private GameObject ammo;
+    [SerializeField] private GameObject outPosition;
+    [SerializeField] private bool debugMode;
+
     void Start()
     {
+        Cursor.lockState = CursorLockMode.Locked;   
         rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
+        cam = this.gameObject.transform.Find("MainCamera").GetComponent<Camera>();  
+        if (photonView.IsMine)
+        {
+            cam = Camera.main;
+        }
+        else
+        {
+            Destroy(cam);
+        }
     }
 
     void Update()
     {
         //photon para que no mueva a todos los players
-        if (photonView.IsMine)
-        { Move(); }
+        if (debugMode) Move();
+        else if (photonView.IsMine)
+        { 
+            Move();
+            if (Input.GetButtonDown("Fire1"))
+            {
+                photonView.RPC("Shoot", RpcTarget.All);
+                Fire();
+            }
+        
+        }
         //colocar camara en personaje
         /*Camera.main.transform.SetParent(this.transform);
         Vector3 posCamara = new Vector3();
@@ -29,6 +54,11 @@ public class ControlPlayer : MonoBehaviourPunCallbacks
 
 
        
+    }
+
+    private void Fire()
+    {
+        Instantiate(ammo, outPosition.transform.position, outPosition.transform.rotation);
     }
 
     private void Move()

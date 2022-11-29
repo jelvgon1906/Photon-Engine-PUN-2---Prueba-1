@@ -7,6 +7,12 @@ using UnityEngine.UI;
 
 public class ControlConexion : MonoBehaviourPunCallbacks
 {
+    #region Constantes
+    //constantes equipos
+    public const int SIN_EQUIPO = 0;
+    public const int ROJO = 1;
+    public const int AZUL = 2;
+    #endregion
     #region Variables privadas
     #endregion
 
@@ -16,6 +22,7 @@ public class ControlConexion : MonoBehaviourPunCallbacks
     public GameObject panelCreacionSala;
     public GameObject panelUnirSala;
     public GameObject panelSala;
+    public GameObject panelSeleccionEquipo;
     /*public GameObject btnConectar;*/
     public Button btnConectar;
     public TextMeshProUGUI txtEstado, txtInfoUser, txtCantidadJugadores, txtNombreSala, txtIsOpen;
@@ -64,6 +71,31 @@ public class ControlConexion : MonoBehaviourPunCallbacks
         else CambiarEstado("Nombre usuario incorrecto");
 
     }
+    /// <summary>
+    /// Asigna al local player un valor en un id "equipo"
+    /// de la tabla hash, con el equipo seleccionado
+    /// </summary>
+    public void OnClickEquipoRojo()
+    {
+        SeleccionEquipo(ROJO);
+    }
+    public void OnClickEquipoAzul()
+    {
+        SeleccionEquipo(AZUL);
+    }
+    public void SeleccionEquipo(int equipo)
+    {
+        playerProperties["equipo"] = equipo;
+        PhotonNetwork.LocalPlayer.SetCustomProperties(playerProperties);
+        CambiarEstado("Equipo seleccionado" + (equipo==ROJO ? "rojo":"azul"));
+        CambiarPanel(panelBienvenida);
+    }
+    public void OnClickSeleccionarEquipo()
+    {
+        CambiarPanel(panelSeleccionEquipo);
+
+        /*btnConectar.interactable = true;*/
+    }
 
     public void OnClickIrACrearSala()
     {
@@ -103,6 +135,7 @@ public class ControlConexion : MonoBehaviourPunCallbacks
                 RoomOptions opcionesSala = new RoomOptions();
                 opcionesSala.MaxPlayers = (byte)max;
                 opcionesSala.IsVisible = true;
+                /*opcionesSala.CustomRoomProperties(min, max);*/
                 /*opcionesSala.IsOpen = false;*/
 
                 PhotonNetwork.CreateRoom(inputNombreSala.text, opcionesSala, TypedLobby.Default);
@@ -146,6 +179,10 @@ public class ControlConexion : MonoBehaviourPunCallbacks
         txtInfoUser.text = PhotonNetwork.NickName;
         /*base.OnConnected();*/
         CambiarPanel(panelBienvenida);
+
+        playerProperties = new ExitGames.Client.Photon.Hashtable();
+        playerProperties.Add("equipo", SIN_EQUIPO);//Valor 0 indica Sin Equipo
+        PhotonNetwork.LocalPlayer.SetCustomProperties(playerProperties);
     }
 
     public override void OnDisconnected(DisconnectCause cause)
@@ -240,10 +277,14 @@ public class ControlConexion : MonoBehaviourPunCallbacks
     /// de los paneles de introduccion al juego
     /// </summary>
     /// <param name="texto"></param>
+    /// 
+
+    
     private void CambiarEstado(string texto)
     {
         txtEstado.text = texto;
     }
+
 
     private void CambiarPanel(GameObject panelObjetivo)
     {
@@ -252,6 +293,7 @@ public class ControlConexion : MonoBehaviourPunCallbacks
         panelCreacionSala.SetActive(false);
         panelUnirSala.SetActive(false);
         panelSala.SetActive(false);
+        panelSeleccionEquipo.SetActive(false);
 
         panelObjetivo.SetActive(true);
     }
@@ -277,28 +319,27 @@ public class ControlConexion : MonoBehaviourPunCallbacks
             //Localizamos sus etiquetas y las actualizamos
             nuevoElemento.transform.Find("txtNombreJugador").GetComponent<TextMeshProUGUI>().text = jugador.NickName;
             //Equipo del jugador            
-            /*object equipoJugador = jugador.CustomProperties["equipo"];
-            String equipo = "";
+            object equipoJugador = jugador.CustomProperties["equipo"];
+            string equipo = "";
             switch ((int)equipoJugador)
             {
-                case 0:
+                case SIN_EQUIPO:
+                    equipo = "Sin equipo";
+                    break;
+                case ROJO:
                     equipo = "Rojo";
                     break;
-                case 1:
+                case AZUL:
                     equipo = "Azul";
                     break;
-                case 2:
-                    equipo = "Verde";
-                    break;
             }
-            nuevoElemento.transform.Find("txtNumActor").GetComponent<TextMeshProUGUI>().text = avatar;
-           */
+            nuevoElemento.transform.Find("txtEquipo").GetComponent<TextMeshProUGUI>().text = equipo;
+
         }
 
 
         //Activaci�n de bot�n Comenzar Juego si el n�mero m�nimo de jugadores est� en la sala
-        if (PhotonNetwork.CurrentRoom.PlayerCount >= int.Parse(inputMinJug.text)
-            && PhotonNetwork.IsMasterClient)
+        if (PhotonNetwork.CurrentRoom.PlayerCount >= int.Parse(inputMinJug.text) && PhotonNetwork.IsMasterClient)
         {
             botonComenzarJuego.gameObject.SetActive(true);
         }
@@ -309,6 +350,7 @@ public class ControlConexion : MonoBehaviourPunCallbacks
 
     }
 
+    ExitGames.Client.Photon.Hashtable playerProperties;
 
     #endregion
 }
